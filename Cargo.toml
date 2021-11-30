@@ -1,0 +1,2 @@
+[workspace]
+members = ["codeforces/*", "practice", "template", "other"]

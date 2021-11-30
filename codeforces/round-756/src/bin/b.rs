@@ -1,0 +1,98 @@
+#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    clippy::many_single_char_names
+)]
+
+use std::cmp::*;
+use std::collections::*;
+
+struct IO<R, W: std::io::Write>(R, std::io::BufWriter<W>);
+
+impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
+    pub fn new(r: R, w: W) -> IO<R, W> {
+        IO(r, std::io::BufWriter::new(w))
+    }
+    pub fn write<S: ToString>(&mut self, s: S) {
+        use std::io::Write;
+        self.1.write_all(s.to_string().as_bytes()).unwrap();
+    }
+    pub fn writeln<S: ToString>(&mut self, s: S) {
+        self.write(format!("{}\n", s.to_string()));
+    }
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
+        let s = v
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+        self.writeln(format!("{} ", &s));
+    }
+    pub fn read<T: std::str::FromStr>(&mut self) -> T {
+        use std::io::Read;
+        let buf = self
+            .0
+            .by_ref()
+            .bytes()
+            .map(|b| b.unwrap())
+            .skip_while(|&b| b == b' ' || b == b'\n' || b == b'\r' || b == b'\t')
+            .take_while(|&b| b != b' ' && b != b'\n' && b != b'\r' && b != b'\t')
+            .collect::<Vec<_>>();
+        unsafe { std::str::from_utf8_unchecked(&buf) }
+            .parse()
+            .ok()
+            .expect("Parse error.")
+    }
+    pub fn usize(&mut self) -> usize {
+        self.read::<usize>()
+    }
+    pub fn i32(&mut self) -> i32 {
+        self.read::<i32>()
+    }
+    pub fn i64(&mut self) -> i64 {
+        self.read::<i64>()
+    }
+    pub fn vec<T: std::str::FromStr>(&mut self, n: usize) -> Vec<T> {
+        (0..n).map(|_| self.read()).collect()
+    }
+    pub fn vecn<T: std::str::FromStr>(&mut self) -> Vec<T> {
+        let n: usize = self.read();
+        self.vec(n)
+    }
+    pub fn chars(&mut self) -> Vec<char> {
+        self.read::<String>().chars().collect()
+    }
+}
+
+// a <= b
+fn solve_one(mut a: i64, mut b: i64) -> i64 {
+    let diff = b - a;
+    let mb = b / 3;
+    let m = min(a, mb);
+
+    let t = diff / 2;
+    let u = min(m, t);
+
+    let mut count = 0;
+
+    a -= u;
+    b -= u * 3;
+    count += u;
+
+    count += min(a, b) / 2;
+
+    count
+}
+
+pub fn main() {
+    let mut sc = IO::new(std::io::stdin(), std::io::stdout());
+
+    for _ in 0..sc.read() {
+        let a = sc.read();
+        let b = sc.read();
+        let (a, b) = if a < b { (a, b) } else { (b, a) };
+        let ans = solve_one(a, b);
+        sc.writeln(ans);
+    }
+}

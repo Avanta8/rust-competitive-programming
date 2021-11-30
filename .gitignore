@@ -1,0 +1,9 @@
+# Ignore all files without extension (IO files)
+*
+!*/
+!*.*
+
+debug/
+target/
+
+Cargo.lock
