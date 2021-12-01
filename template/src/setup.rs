@@ -1,4 +1,8 @@
-#![allow(unused_imports, clippy::many_single_char_names)]
+#![allow(
+    unused_imports,
+    clippy::many_single_char_names,
+    clippy::comparison_chain
+)]
 
 use std::cmp::*;
 use std::collections::*;
