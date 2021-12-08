@@ -1,4 +1,8 @@
-#![allow(unused_imports, clippy::many_single_char_names)]
+#![allow(
+    unused_imports,
+    clippy::many_single_char_names,
+    clippy::comparison_chain
+)]
 
 use std::cmp::*;
 use std::collections::*;
@@ -63,69 +67,82 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-fn solve_one(width: usize, height: usize, grid: Vec<Vec<char>>) -> Vec<Vec<char>> {
-    let mut lab = None;
-    for (y, row) in grid.iter().enumerate() {
-        for (x, &sq) in row.iter().enumerate() {
-            if sq == 'L' {
-                lab = Some((x, y));
-            }
-        }
-    }
-    let lab = lab.unwrap();
+#[derive(Debug)]
+pub struct Dsu {
+    parent: Vec<usize>,
+    size: Vec<usize>,
+    xp: Vec<i64>,
+}
 
-    let mut res = grid.clone();
-    let mut bag = vec![lab];
-
-    while let Some(current) = bag.pop() {
-        let (cx, cy) = current;
-        if res[cy][cx] == '+' {
-            continue;
-        }
-
-        let mut neighbours = vec![];
-        let mut sqs = vec![];
-        for (dx, dy) in [(0, -1), (0, 1), (-1, 0), (1, 0)] {
-            let (nx, ny) = (cx as isize + dx, cy as isize + dy);
-            if nx < 0 || nx >= width as isize || ny < 0 || ny >= height as isize {
-                continue;
-            }
-            let (nx, ny) = (nx as usize, ny as usize);
-            if grid[ny][nx] != '#' {
-                neighbours.push((nx, ny));
-                sqs.push(res[ny][nx]);
-            }
-        }
-
-        let free = sqs.iter().filter(|&&c| c == '.').count();
-        let reach = sqs.iter().filter(|&&c| c == '+' || c == 'L').count();
-
-        if (free > 1 || reach == 0) && grid[cy][cx] != 'L' {
-            continue;
-        }
-
-        res[cy][cx] = '+';
-        for pos in neighbours {
-            bag.push(pos);
+impl Dsu {
+    pub fn new(size: usize) -> Self {
+        Self {
+            parent: (0..size).collect(),
+            size: vec![1; size],
+            xp: vec![0; size],
         }
     }
 
-    res[lab.1][lab.0] = 'L';
-    res
+    pub fn unite(&mut self, a: usize, b: usize) -> bool {
+        let mut sa = self.get(a).0;
+        let mut sb = self.get(b).0;
+        if sa == sb {
+            return false;
+        }
+
+        if self.size[sa] < self.size[sb] {
+            std::mem::swap(&mut sa, &mut sb);
+        }
+
+        self.xp[sb] -= self.xp[sa];
+        self.parent[sb] = sa;
+
+        true
+    }
+
+    fn add(&mut self, v: usize, x: i64) {
+        let p = self.get(v).0;
+        self.xp[p] += x;
+    }
+
+    fn get(&mut self, v: usize) -> (usize, i64) {
+        if v == self.parent[v] {
+            return (v, self.xp[v]);
+        }
+
+        let (p, uxp) = self.get(self.parent[v]);
+
+        if self.parent[v] != p {
+            self.parent[v] = p;
+            self.xp[v] += uxp - self.xp[p];
+        }
+
+        (p, self.xp[p] + self.xp[v])
+    }
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
-    for _ in 0..sc.read() {
-        let (height, width) = (sc.usize(), sc.usize());
-        let grid = (0..height).map(|_| sc.chars()).collect::<Vec<_>>();
-        let ans = solve_one(width, height, grid);
-        let p = ans
-            .iter()
-            .map(|row| row.iter().collect::<String>())
-            .collect::<Vec<_>>()
-            .join("\n");
-        sc.writeln(p);
+    let n = sc.read();
+    let m = sc.read();
+
+    let mut dsu = Dsu::new(n);
+
+    for _ in 0..m {
+        match sc.read::<String>().as_str() {
+            "add" => {
+                dsu.add(sc.usize0(), sc.read());
+            }
+            "join" => {
+                dsu.unite(sc.usize0(), sc.usize0());
+            }
+            "get" => {
+                let v = sc.usize0();
+                let x = dsu.get(v).1;
+                sc.writeln(x);
+            }
+            _ => unreachable!(),
+        }
     }
 }

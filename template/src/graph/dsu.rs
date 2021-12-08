@@ -12,10 +12,6 @@ impl Dsu {
         }
     }
 
-    pub fn is_ancestor(&self, v: usize) -> bool {
-        self.parent[v] == v
-    }
-
     pub fn is_same(&mut self, a: usize, b: usize) -> bool {
         self.get(a) == self.get(b)
     }
@@ -32,14 +28,16 @@ impl Dsu {
     pub fn unite(&mut self, a: usize, b: usize) -> bool {
         let mut sa = self.get(a);
         let mut sb = self.get(b);
-        if sa != sb {
-            if self.size[sa] < self.size[sb] {
-                std::mem::swap(&mut sa, &mut sb);
-            }
-            self.parent[sb] = sa;
-            self.size[sa] += self.size[sb];
+        if sa == sb {
+            return false;
         }
 
-        sa != sb
+        if self.size[sa] < self.size[sb] {
+            std::mem::swap(&mut sa, &mut sb);
+        }
+        self.parent[sb] = sa;
+        self.size[sa] += self.size[sb];
+
+        true
     }
 }
