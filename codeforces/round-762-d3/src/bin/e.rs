@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,50 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(n: usize, mut vec: Vec<usize>) -> Vec<i64> {
+    vec.sort_unstable();
+    vec.reverse();
+
+    let mut counts = vec![0; n + 1];
+    for &a in vec.iter() {
+        counts[a] += 1;
+    }
+
+    let mut added = 0;
+    let mut ans = vec![-1; n + 1];
+    ans[0] = counts[0];
+    let mut spare = vec![];
+
+    for i in 1..=n {
+        // We want to be able to make all numbers below `i`
+        // We know we can make all numbers less than `i - 1`.
+        // So we want to know - can we make `i - 1`?
+        while let Some(&v) = vec.last() {
+            if v >= i {
+                break;
+            }
+            vec.pop();
+            spare.push(v);
+        }
+
+        if let Some(v) = spare.pop() {
+            added += (i - 1 - v) as i64;
+            ans[i] = added + counts[i];
+        } else {
+            break;
+        }
+    }
+
+    ans
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let n = sc.usize();
+        let v = sc.vec(n);
+        let ans = solve_one(n, v);
+        sc.writevec(&ans);
     }
 }

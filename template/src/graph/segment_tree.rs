@@ -1,10 +1,3 @@
-/*
-               1
-        2              1
-   2       3       1       3
- 2   5   8   3   4   1   9   3
-*/
-
 #[derive(Debug)]
 pub struct SegmentTree<T> {
     vec: Vec<Option<T>>,
@@ -79,39 +72,6 @@ where
             _ => a.or(b),
         }
     }
-}
-
-fn main() {
-    // println!("{:?}", SegmentTree::new(&[3; 10], 0, std::cmp::max));
-    // println!("{:?}", SegmentTree::new(&[0; 8], 0, std::cmp::max));
-    // println!("{:?}", SegmentTree::new(&[0; 16], 0, std::cmp::max));
-    // println!("{:?}", SegmentTree::new(&[0; 15], 0, std::cmp::max));
-    // println!("{:?}", SegmentTree::new(&[0; 17], 0, std::cmp::max));
-
-    let mut tree = SegmentTree::new(8, std::cmp::min);
-    tree.fill(&(1..9).collect::<Vec<_>>());
-    println!("{:?}", tree);
-
-    println!("{}", tree.get(0..8).unwrap());
-    println!("{}", tree.get(3..6).unwrap());
-
-    let mut tree = SegmentTree::new(22, std::cmp::max);
-    // let mut tree = SegmentTree::new(22, |a: i64, b: i64| a + b);
-    tree.fill(&(1..23).collect::<Vec<_>>());
-    println!("{:?}", tree);
-
-    println!("{}", tree.get(0..8).unwrap());
-    println!("{}", tree.get(3..6).unwrap());
-    println!("{}", tree.get(4..22).unwrap());
-    println!("{}", tree.get(18..21).unwrap());
-    println!("{}", tree.get(8..17).unwrap());
-
-    tree.update(3, 234);
-    println!("{}", tree.get(0..8).unwrap());
-    println!("{}", tree.get(3..6).unwrap());
-    println!("{}", tree.get(4..22).unwrap());
-    println!("{}", tree.get(18..21).unwrap());
-    println!("{}", tree.get(8..17).unwrap());
 }
 
 #[cfg(test)]

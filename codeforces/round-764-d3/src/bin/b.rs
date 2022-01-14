@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,41 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(a: i64, b: i64, c: i64) -> bool {
+    // dbg!(a, b, c);
+    {
+        let diff = c - b;
+        let target = b - diff;
+        // dbg!(target);
+        if target % a == 0 && target / a > 0 {
+            return true;
+        }
+    }
+
+    let mid = (a + c) / 2;
+    if mid * 2 == a + c {
+        if mid % b == 0 && mid / b > 0 {
+            // dbg!("true");
+            return true;
+        }
+    }
+
+    {
+        let diff = b - a;
+        let target = b + diff;
+        // dbg!(target);
+        if target % c == 0 && target / c > 0 {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let ans = solve_one(sc.read(), sc.read(), sc.read());
+        sc.writeln(if ans { "YES" } else { "NO" });
     }
 }

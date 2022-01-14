@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,12 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
-}
-
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let n = sc.usize();
+        let v = (0..n).map(|x| x + 2).collect::<Vec<_>>();
+        sc.writevec(&v);
     }
 }

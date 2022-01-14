@@ -79,15 +79,40 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(n: usize, vec: Vec<u8>) -> usize {
+    let mut left = vec![0];
+    for &x in vec.iter().take(n) {
+        left.push(left.last().unwrap() + if x == 1 { 1 } else { -1 });
+    }
+
+    let mut map = HashMap::new();
+    for (i, v) in left.into_iter().enumerate() {
+        map.insert(v, i);
+    }
+
+    let mut best = n * 2;
+    if let Some(&i) = map.get(&0) {
+        best = 2 * n - i;
+    }
+    let mut last = 0;
+    for (idx, &x) in vec.iter().enumerate().skip(n).rev() {
+        last += if x == 1 { 1 } else { -1 };
+        if let Some(&i) = map.get(&-last) {
+            let diff = idx - i;
+            best = min(best, diff);
+        }
+    }
+
+    best
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let n = sc.read();
+        let vec = sc.vec(n * 2);
+        let ans = solve_one(n, vec);
         sc.writeln(ans);
     }
 }

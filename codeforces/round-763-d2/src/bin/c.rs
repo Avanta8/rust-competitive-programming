@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,52 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(_n: usize, vec: Vec<i64>) -> i64 {
+    let can_do = |target: i64| -> bool {
+        let mut carry = (0, 0);
+        for (i, stones) in vec.iter().copied().enumerate().rev() {
+            let new_stones = stones + carry.0;
+            if new_stones < target {
+                return false;
+            }
+            carry.0 = carry.1;
+            if i >= 2 {
+                let diff = min(new_stones - target, stones) / 3;
+                carry.0 += diff;
+                carry.1 = diff * 2;
+            } else {
+                carry.1 = 0;
+            }
+        }
+        true
+    };
+
+    // We should always be able to do `low`, and should never be able to do `high`.
+
+    let mut low = vec.iter().copied().min().unwrap();
+    let mut high = vec.iter().copied().sum::<i64>() / vec.len() as i64 + 1;
+
+    loop {
+        let mid = (low + high) / 2;
+
+        if can_do(mid) {
+            if mid == low {
+                return mid;
+            }
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let n = sc.read();
+        let vec = sc.vec(n);
+        let ans = solve_one(n, vec);
         sc.writeln(ans);
     }
 }

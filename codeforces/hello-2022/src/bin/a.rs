@@ -5,9 +5,7 @@
     clippy::if_same_then_else,
     clippy::if_not_else,
     clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::type_complexity
 )]
 
 use std::cmp::*;
@@ -79,15 +77,28 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
-}
-
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let n = sc.usize();
+        let k = sc.usize();
+
+        if 2 * k > n + 1 {
+            sc.writeln(-1);
+            continue;
+        }
+
+        for i in 0..k {
+            let mut row = vec!['.'; n];
+            row[2 * i] = 'R';
+            sc.writejoin(&row);
+            if 2 * i + 1 < n {
+                sc.writejoin(&vec!['.'; n]);
+            }
+        }
+        for _ in 2 * k..n {
+            sc.writejoin(&vec!['.'; n]);
+        }
     }
 }

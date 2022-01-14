@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,56 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn count_slice<T: Eq + std::hash::Hash>(v: &[T]) -> HashMap<&T, usize> {
+    let mut counts = HashMap::new();
+
+    for item in v {
+        *counts.entry(item).or_insert(0) += 1;
+    }
+
+    counts
+}
+
+pub fn solve_one(len: usize, k: usize, mut vec: Vec<char>) -> usize {
+    // assert!(len == vec.len());
+    // dbg!(&vec);
+    // println!("\n{:?}", vec);
+    vec.sort_unstable();
+
+    let mut counts = count_slice(&vec);
+
+    let mut pairs = 0;
+    let mut singles = 0;
+    for (&c, count) in counts {
+        if count % 2 == 1 {
+            singles += 1;
+        }
+        pairs += count / 2;
+    }
+
+    // dbg!(pairs, singles);
+
+    let mut best = pairs / k * 2;
+    // dbg!(best);
+
+    singles += pairs * 2 - best * k;
+
+    if singles >= k {
+        best += 1;
+    }
+    // dbg!(best);
+
+    best
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let n = sc.read();
+        let k = sc.read();
+        let chars = sc.chars();
+        let ans = solve_one(n, k, chars);
         sc.writeln(ans);
     }
 }

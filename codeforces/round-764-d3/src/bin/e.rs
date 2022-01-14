@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,7 +78,42 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
+pub fn solve_one(n: usize, len: usize, vec: Vec<Vec<u32>>) -> Option<i64> {
+    let mut idx = 0;
+    // let mut last = (0, 0);
+
+    let target = vec.last().unwrap();
+
+    let mut segs = vec![];
+    segs.push((0usize, 0usize, 0usize));
+
+    while idx < len {
+        if let Some(&(left, right, p)) = segs.last() {
+            if let Some(&v) = vec[p].get(right + 1) {
+                if v == target[idx] {
+                    // segs.push((left, right + 1, p));
+                    segs.last_mut().unwrap().1 += 1;
+                    continue;
+                }
+            }
+
+            let mut found = None;
+            for (t, number) in vec.iter().enumerate() {
+                for i in 0..len - 1 {
+                    if number[i] == target[i] && number[i + 1] == target[i + 1] {
+                        found = Some((i, i + 1, t));
+                        break;
+                    }
+                }
+            }
+            if let Some(seg) = found {
+                segs.push(seg);
+            }
+        } else {
+            // Start
+        }
+        idx += 1;
+    }
     unimplemented!();
 }
 
@@ -87,7 +121,17 @@ pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let n = sc.read();
+        let len = sc.read();
+        let vec = (0..n)
+            .map(|_| {
+                sc.chars()
+                    .into_iter()
+                    .map(|c| c.to_digit(10).unwrap())
+                    .collect()
+            })
+            .collect();
+        let ans = solve_one(n, len, vec);
         sc.writeln(ans);
     }
 }

@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -87,7 +86,8 @@ pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let n = sc.read();
+        let vec = sc.vec::<i64>(n);
+        sc.writeln(vec.iter().copied().max().unwrap() - vec.iter().copied().min().unwrap());
     }
 }

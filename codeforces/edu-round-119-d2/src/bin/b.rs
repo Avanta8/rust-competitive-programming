@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,65 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(
+    width: i64,
+    height: i64,
+    x0: Vec<i64>,
+    xh: Vec<i64>,
+    y0: Vec<i64>,
+    yw: Vec<i64>,
+) -> i64 {
+    let mut points = vec![];
+    for &x in x0.iter() {
+        points.push((x, 0));
+    }
+    for &x in xh.iter() {
+        points.push((x, height));
+    }
+    for &y in y0.iter() {
+        points.push((0, y));
+    }
+    for &y in yw.iter() {
+        points.push((width, y));
+    }
+
+    let mut best = 0;
+
+    let d = x0.last().unwrap() - x0[0];
+    for &(px, py) in points.iter() {
+        best = max(best, d * py);
+    }
+    let d = xh.last().unwrap() - xh[0];
+    for &(px, py) in points.iter() {
+        best = max(best, d * (height - py));
+    }
+    let d = y0.last().unwrap() - y0[0];
+    for &(px, py) in points.iter() {
+        best = max(best, d * px);
+    }
+    let d = yw.last().unwrap() - yw[0];
+    for &(px, py) in points.iter() {
+        best = max(best, d * (width - px));
+    }
+
+    best
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let w = sc.read();
+        let h = sc.read();
+        let mut x0 = sc.vecn();
+        let mut xh = sc.vecn();
+        let mut y0 = sc.vecn();
+        let mut yw = sc.vecn();
+        x0.sort_unstable();
+        xh.sort_unstable();
+        y0.sort_unstable();
+        yw.sort_unstable();
+        let ans = solve_one(w, h, x0, xh, y0, yw);
         sc.writeln(ans);
     }
 }

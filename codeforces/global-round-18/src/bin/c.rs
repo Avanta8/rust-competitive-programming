@@ -2,11 +2,6 @@
     unused_imports,
     clippy::many_single_char_names,
     clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -26,19 +21,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +68,75 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(len: usize, start: Vec<bool>, target: Vec<bool>) -> i64 {
+    if start == target {
+        return 0;
+    }
+    // println!("{} {:?} {:?}", len, start, target);
+    let parity = start
+        .iter()
+        .copied()
+        .zip(target.iter().copied())
+        .map(|(a, b)| a == b)
+        .collect::<Vec<_>>();
+    // even: true, odd: false
+
+    let mut evens = (0, 0); // (0s, 1s)
+    let mut odds = (0, 0);
+
+    for i in 0..len {
+        if start[i] {
+            if parity[i] {
+                evens.1 += 1;
+            } else {
+                odds.1 += 1;
+            }
+        } else {
+            if parity[i] {
+                evens.0 += 1;
+            } else {
+                odds.0 += 1;
+            }
+        }
+    }
+
+    // println!("{:?}", parity);
+    // println!("{:?} {:?}", evens, odds);
+
+    let can_odd = odds.0 == odds.1;
+    let can_even = evens.1 == evens.0 + 1;
+
+    let even_count = evens.1 + evens.0;
+    let odd_count = odds.1 + odds.0;
+
+    if odd_count <= even_count {
+        if can_odd {
+            return odd_count;
+        } else if can_even {
+            return even_count;
+        }
+    } else {
+        if can_even {
+            return even_count;
+        } else if can_odd {
+            return odd_count;
+        }
+    }
+
+    -1
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let len = sc.usize();
+        let a = sc.chars();
+        let b = sc.chars();
+
+        let a = a.into_iter().map(|c| c == '1').collect::<Vec<_>>();
+        let b = b.into_iter().map(|c| c == '1').collect::<Vec<_>>();
+        let ans = solve_one(len, a, b);
         sc.writeln(ans);
     }
 }

@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,61 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn gen_graph(edges: &[(usize, usize, i64)], len: usize) -> Vec<Vec<(usize, i64)>> {
+    let mut graph = vec![vec![]; len];
+    for &(a, b, w) in edges {
+        graph[a].push((b, w));
+        graph[b].push((a, w));
+    }
+    graph
+}
+
+pub fn solve_one(len: usize, edges: Vec<(usize, usize, i64)>) -> i64 {
+    let graph = gen_graph(&edges, len);
+
+    println!("{:?}", graph);
+
+    let can_do = |target: i64| -> bool {
+        let mut bag = vec![0];
+        let mut seen: HashSet<_> = [0].into();
+
+        while let Some(pos) = bag.pop() {
+            for &(np, weight) in graph[pos].iter() {
+                if weight
+            }
+        }
+        todo!()
+    };
+
+    // low is never doable. high is always doable.
+    let mut low = 0;
+    let mut high = i64::MAX;
+
+    while low < high {
+        let mid = (low + high) / 2;
+        if can_do(mid) {
+            if high == mid {
+                assert!(!can_do(mid - 1));
+                return mid;
+            }
+            high = mid;
+        } else {
+            low = mid;
+        }
+    }
+    -1
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let num_nodes = sc.read();
+        let num_edges = sc.read();
+        let edges = (0..num_edges)
+            .map(|_| (sc.usize0(), sc.usize0(), sc.read()))
+            .collect();
+        let ans = solve_one(num_nodes, edges);
         sc.writeln(ans);
     }
 }

@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,51 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+fn read_i64() -> i64 {
+    let mut buf = String::new();
+    std::io::stdin().read_line(&mut buf).unwrap();
+    buf.trim().parse().unwrap()
+}
+
+fn ask(c: i64) -> i64 {
+    println!("+ {}", c);
+    read_i64()
+}
+
+fn answer(x: i64) {
+    println!("! {}", x);
 }
 
 pub fn main() {
-    let mut sc = IO::new(std::io::stdin(), std::io::stdout());
+    let n = read_i64();
 
-    for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
-    }
+    let mut low = 0;
+    let mut high = n;
+
+    let lower = 0;
+    let upper = lower + 1;
+
+    let res = loop {
+        if low + 1 == high {
+            break high;
+            // answer(upper * n - high);
+            // return;
+        }
+        // println!("{} {} {}", low, high, high - low);
+        let mid = (low + high + 1) / 2;
+
+        let val = ask(mid);
+        if val == lower {
+            low = mid;
+        } else {
+            assert!(val == upper);
+            // if mid == high {
+            //     answer(val * n - mid);
+            //     return;
+            // }
+            high = mid;
+        }
+    };
+
+    answer(upper * n - res);
 }

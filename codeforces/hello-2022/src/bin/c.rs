@@ -5,9 +5,7 @@
     clippy::if_same_then_else,
     clippy::if_not_else,
     clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::type_complexity
 )]
 
 use std::cmp::*;

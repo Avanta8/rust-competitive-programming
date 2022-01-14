@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,37 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(n: usize, deliveries: Vec<i64>, collects: Vec<i64>) -> i64 {
+    let can_do = |time: i64| -> bool {
+        let idxs = (0..n).filter(|&i| deliveries[i] > time);
+        idxs.map(|i| collects[i]).sum::<i64>() <= time
+    };
+
+    // low is never doable. high is always doable.
+    let mut low = -1;
+    let mut high = deliveries.iter().copied().max().unwrap();
+
+    loop {
+        let mid = (low + high + 1) / 2;
+        if can_do(mid) {
+            if mid == high {
+                return high;
+            }
+            high = mid;
+        } else {
+            low = mid;
+        }
+    }
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let n = sc.read();
+        let a = sc.vec(n);
+        let b = sc.vec(n);
+        let ans = solve_one(n, a, b);
         sc.writeln(ans);
     }
 }

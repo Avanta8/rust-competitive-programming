@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,50 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(arr: Vec<i64>) -> i64 {
+    let n = arr.len() as i64;
+    // let mut set = arr.iter().copied().collect::<HashSet<_>>();
+    // let rems = (1..=n).filter(|x| !set.contains(x)).collect::<Vec<_>>();
+    let mut set = (1..=n).collect::<HashSet<_>>();
+    let mut idxs = HashSet::new();
+    for (i, &m) in arr.iter().enumerate() {
+        if set.contains(&m) {
+            set.remove(&m);
+            idxs.insert(i);
+        }
+    }
+    // println!("{:?} {:?}", idxs, set);
+
+    let mut rems = arr
+        .iter()
+        .enumerate()
+        .filter_map(|(i, &m)| (!idxs.contains(&i)).then(|| m))
+        .collect::<Vec<_>>();
+
+    rems.sort_unstable();
+    rems.reverse();
+
+    let mut tars = set.into_iter().collect::<Vec<_>>();
+    tars.sort_unstable();
+    tars.reverse();
+
+    // println!("{:?} {:?}", rems, tars);
+
+    let mut count = 0;
+    for (r, t) in rems.into_iter().zip(tars.into_iter()) {
+        if r <= t * 2 {
+            return -1;
+        }
+        count += 1;
+    }
+    count
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let ans = solve_one(sc.vecn());
         sc.writeln(ans);
     }
 }

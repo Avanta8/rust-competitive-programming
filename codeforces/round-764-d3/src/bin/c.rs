@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,30 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(len: usize, vec: Vec<usize>) -> bool {
+    let mut able = vec![false; len + 1];
+    for mut n in vec {
+        while n > 0 {
+            if n <= len && !able[n] {
+                able[n] = true;
+                break;
+            }
+            n /= 2;
+        }
+        if n == 0 {
+            return false;
+        }
+    }
+    true
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let n = sc.read();
+        let vec = sc.vec(n);
+        let ans = solve_one(n, vec);
+        sc.writeln(if ans { "YES" } else { "NO" });
     }
 }

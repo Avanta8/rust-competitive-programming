@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,46 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
-}
-
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
+    let mut length = 0;
+    let mut positions = HashMap::new();
+
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let q = sc.i64();
+        match q {
+            1 => {
+                let x = sc.i64();
+                positions.entry(x).or_insert_with(Vec::new).push(length);
+                length += 1;
+            }
+            2 => {
+                let x = sc.i64();
+                let y = sc.i64();
+
+                let mut xs = positions.remove(&x).unwrap_or_default();
+                let mut ys = positions.remove(&y).unwrap_or_default();
+
+                if xs.len() > ys.len() {
+                    std::mem::swap(&mut xs, &mut ys);
+                }
+                ys.extend(xs);
+                positions.insert(y, ys);
+            }
+            _ => unreachable!(),
+        }
     }
+
+    let mut arr = vec![];
+    for (k, v) in positions {
+        for idx in v {
+            if idx + 1 > arr.len() {
+                arr.resize(idx + 1, 0);
+            }
+            arr[idx] = k;
+        }
+    }
+
+    sc.writevec(&arr);
 }

@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,67 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(_n: i64, k: i64, x: i64, s: Vec<char>) -> String {
+    let mut tfs = vec![];
+    let mut count = 0;
+    for &c in s.iter() {
+        if c == 'a' {
+            if count != 0 {
+                tfs.push(count * k);
+            }
+            count = 0;
+        } else {
+            count += 1;
+        }
+    }
+    if count != 0 {
+        tfs.push(count * k);
+    }
+
+    let gaps = tfs.len();
+    if gaps == 0 {
+        return s.into_iter().collect();
+    }
+
+    let mut df = vec![1i64; gaps];
+    for i in (0..gaps - 1).rev() {
+        df[i] = df[i + 1].checked_mul(tfs[i + 1] + 1).unwrap_or(i64::MAX);
+    }
+
+    let mut rem = x - 1;
+    let mut counts = vec![0; gaps];
+    for i in 0..gaps {
+        counts[i] = rem / df[i];
+        rem %= df[i];
+    }
+
+    let mut ans = vec![];
+    let mut s_iter = s.iter().copied().peekable();
+    let mut current_count = 0;
+    while let Some(current) = s_iter.next() {
+        if current == 'a' {
+            ans.push('a');
+        } else {
+            while s_iter.peek() == Some(&'*') {
+                s_iter.next();
+            }
+            ans.resize(ans.len() + counts[current_count] as usize, 'b');
+            current_count += 1;
+        }
+    }
+
+    ans.into_iter().collect::<String>()
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
+        let n = sc.read();
+        let k = sc.read();
+        let x = sc.read();
+        let s = sc.chars();
+        let ans = solve_one(n, k, x, s);
         sc.writeln(ans);
     }
 }

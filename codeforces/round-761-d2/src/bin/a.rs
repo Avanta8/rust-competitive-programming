@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,50 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
-}
-
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let mut S = sc.chars();
+        let T = sc.read::<String>();
+
+        let mut ts = vec![0; 3];
+        let mut others = vec![];
+
+        S.sort();
+        for &c in S.iter() {
+            if c == 'a' {
+                ts[0] += 1;
+            } else if c == 'b' {
+                ts[1] += 1;
+            } else if c == 'c' {
+                ts[2] += 1;
+            } else {
+                others.push(c.to_string());
+            }
+        }
+
+        let f = if T == "abc" && ts.iter().all(|&x| x != 0) {
+            [
+                ["a"].repeat(ts[0]),
+                ["c"].repeat(ts[2]),
+                ["b"].repeat(ts[1]),
+            ]
+            .concat()
+        } else {
+            [
+                ["a"].repeat(ts[0]),
+                ["b"].repeat(ts[1]),
+                ["c"].repeat(ts[2]),
+            ]
+            .concat()
+        };
+
+        let p = f.into_iter().map(|x| x.to_owned()).collect::<Vec<_>>();
+        let q = [p, others].concat();
+
+        println!("{}", q.into_iter().collect::<String>());
+
+        // println!("{:?} {:?}", S, T);
     }
 }

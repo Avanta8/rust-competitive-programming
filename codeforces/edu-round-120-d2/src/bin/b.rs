@@ -1,13 +1,7 @@
 #![allow(
     unused_imports,
     clippy::many_single_char_names,
-    clippy::comparison_chain,
-    clippy::if_same_then_else,
-    clippy::if_not_else,
-    clippy::ifs_same_cond,
-    clippy::type_complexity,
-    clippy::collapsible_if,
-    clippy::collapsible_else_if
+    clippy::comparison_chain
 )]
 
 use std::cmp::*;
@@ -26,19 +20,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
+            .join(" ");
         self.writeln(format!("{} ", &s));
-    }
-    pub fn writevec<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, " ")
-    }
-    pub fn writejoin<T: ToString>(&mut self, v: &[T]) {
-        self.writesep(v, "")
     }
     pub fn read<T: std::str::FromStr>(&mut self) -> T {
         use std::io::Read;
@@ -79,15 +67,35 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+pub fn solve_one(n: usize, p: Vec<i64>, s: Vec<bool>) -> Vec<i64> {
+    // println!("{}, {:?}, {:?}", n, p, s);
+
+    let mut disliked = (0..n).filter(|&i| !s[i]).collect::<Vec<_>>();
+    disliked.sort_unstable_by(|&a, &b| p[a].cmp(&p[b]));
+
+    let mut liked = (0..n).filter(|&i| s[i]).collect::<Vec<_>>();
+    liked.sort_unstable_by(|&a, &b| p[a].cmp(&p[b]));
+
+    // println!("disliked: {:?}", disliked);
+    // println!("liked: {:?}", liked);
+
+    let mut ns = disliked.into_iter().chain(liked);
+
+    let mut ans = vec![0; n];
+    for g in 1..=n as i64 {
+        ans[ns.next().unwrap()] = g;
+    }
+    ans
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
+        let n = sc.usize();
+        let p = sc.vec(n);
+        let s = sc.chars().into_iter().map(|c| c == '1').collect();
+        let ans = solve_one(n, p, s);
+        sc.writevec(&ans);
     }
 }

@@ -6,7 +6,6 @@
     clippy::if_not_else,
     clippy::ifs_same_cond,
     clippy::type_complexity,
-    clippy::collapsible_if,
     clippy::collapsible_else_if
 )]
 
@@ -79,15 +78,63 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one() -> i64 {
-    unimplemented!();
+fn diff(n: i64) -> i64 {
+    let mut sqrt = (n as f64).sqrt() as i64;
+    while sqrt * sqrt > n {
+        sqrt -= 1;
+    }
+    assert!(sqrt * sqrt <= n);
+
+    while (sqrt + 1) * (sqrt + 1) <= n {
+        sqrt += 1;
+    }
+
+    assert!(sqrt * sqrt <= n);
+    assert!((sqrt + 1) * (sqrt + 1) > n);
+
+    if sqrt * sqrt == n {
+        0
+    } else {
+        min((n - sqrt * sqrt).abs(), (n - (sqrt + 1) * (sqrt + 1)).abs())
+    }
+}
+
+pub fn solve_one(n: usize, vec: Vec<i64>) -> i64 {
+    let mut squares = vec
+        .iter()
+        .copied()
+        .filter(|&x| diff(x) == 0)
+        .collect::<Vec<_>>();
+    let num_squares = squares.len();
+    return match n.cmp(&(num_squares * 2)) {
+        Ordering::Less => {
+            squares.sort_unstable();
+            squares.reverse();
+            let mut total = 0;
+            for x in squares.into_iter().take(num_squares - n / 2) {
+                total += if x > 0 { 1 } else { 2 };
+            }
+            total
+        }
+        Ordering::Greater => {
+            let mut diffs = vec
+                .iter()
+                .map(|&x| diff(x))
+                .filter(|&x| x != 0)
+                .collect::<Vec<_>>();
+            diffs.sort_unstable();
+
+            diffs.into_iter().take(n / 2 - num_squares).sum()
+        }
+        Ordering::Equal => 0,
+    };
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
-    for _ in 0..sc.read() {
-        let ans = solve_one();
-        sc.writeln(ans);
-    }
+    let n = sc.read();
+    let vec = sc.vec(n);
+    let ans = solve_one(n, vec);
+    sc.writeln(ans);
 }
