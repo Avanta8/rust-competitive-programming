@@ -26,13 +26,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
+    pub fn writesep<T: ToString, S: ToString + ?Sized>(&mut self, v: &[T], sep: &S) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(sep);
-        self.writeln(format!("{} ", &s));
+            .join(&sep.to_string());
+        self.writeln(s);
     }
     pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         self.writesep(v, " ")
