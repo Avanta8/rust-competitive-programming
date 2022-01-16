@@ -47,8 +47,8 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
             .by_ref()
             .bytes()
             .map(|b| b.unwrap())
-            .skip_while(|&b| b == b' ' || b == b'\n' || b == b'\r' || b == b'\t')
-            .take_while(|&b| b != b' ' && b != b'\n' && b != b'\r' && b != b'\t')
+            .skip_while(u8::is_ascii_whitespace)
+            .take_while(|b| !b.is_ascii_whitespace())
             .collect::<Vec<_>>();
         unsafe { std::str::from_utf8_unchecked(&buf) }
             .parse()
