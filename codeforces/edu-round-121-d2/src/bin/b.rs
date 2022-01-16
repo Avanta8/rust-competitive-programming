@@ -5,12 +5,13 @@
     clippy::if_same_then_else,
     clippy::if_not_else,
     clippy::ifs_same_cond,
-    clippy::type_complexity
+    clippy::type_complexity,
+    clippy::collapsible_if,
+    clippy::collapsible_else_if
 )]
 
 use std::cmp::*;
 use std::collections::*;
-use std::vec;
 
 pub struct IO<R, W: std::io::Write>(R, std::io::BufWriter<W>);
 
@@ -25,13 +26,13 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(format!("{}\n", s.to_string()));
     }
-    pub fn writesep<T: ToString, S: ToString + ?Sized>(&mut self, v: &[T], sep: &S) {
+    pub fn writesep<T: ToString>(&mut self, v: &[T], sep: &str) {
         let s = v
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
-            .join(&sep.to_string());
-        self.writeln(s);
+            .join(sep);
+        self.writeln(format!("{}", &s));
     }
     pub fn writevec<T: ToString>(&mut self, v: &[T]) {
         self.writesep(v, " ")
@@ -46,8 +47,8 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
             .by_ref()
             .bytes()
             .map(|b| b.unwrap())
-            .skip_while(u8::is_ascii_whitespace)
-            .take_while(|b| !b.is_ascii_whitespace())
+            .skip_while(|&b| b == b' ' || b == b'\n' || b == b'\r' || b == b'\t')
+            .take_while(|&b| b != b' ' && b != b'\n' && b != b'\r' && b != b'\t')
             .collect::<Vec<_>>();
         unsafe { std::str::from_utf8_unchecked(&buf) }
             .parse()
@@ -78,36 +79,38 @@ impl<R: std::io::Read, W: std::io::Write> IO<R, W> {
     }
 }
 
-pub fn solve_one(n: usize, grid: Vec<Vec<i64>>) -> i64 {
-    let mut total = [
-        grid[n][0],
-        grid[0][n],
-        grid[n][n - 1],
-        grid[n - 1][n],
-        grid[2 * n - 1][n - 1],
-        grid[n - 1][2 * n - 1],
-        grid[2 * n - 1][0],
-        grid[0][2 * n - 1],
-    ]
-    .into_iter()
-    .min()
-    .unwrap();
+pub fn solve_one(x: Vec<char>) -> Vec<u32> {
+    let x = x
+        .into_iter()
+        .map(|c| c.to_digit(10).unwrap())
+        .collect::<Vec<_>>();
 
-    for x in n..n * 2 {
-        for y in n..n * 2 {
-            total += grid[y][x];
+    let len = x.len();
+
+    for idx in (0..len - 1).rev() {
+        let a = x[idx];
+        let b = x[idx + 1];
+        if a + b >= 10 {
+            let mut nx = x;
+            nx[idx] = 1;
+            nx[idx + 1] = a + b - 10;
+            return nx;
         }
     }
-    total
+
+    let mut nx = x;
+    let a = nx.remove(0);
+    let b = nx.remove(0);
+    nx.insert(0, a + b);
+
+    nx
 }
 
 pub fn main() {
     let mut sc = IO::new(std::io::stdin(), std::io::stdout());
 
     for _ in 0..sc.read() {
-        let n = sc.usize();
-        let grid = (0..n * 2).map(|_| sc.vec(n * 2)).collect();
-        let ans = solve_one(n, grid);
-        sc.writeln(ans);
+        let ans = solve_one(sc.chars());
+        sc.writejoin(&ans);
     }
 }
