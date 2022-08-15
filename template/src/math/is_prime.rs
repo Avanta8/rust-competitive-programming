@@ -1,19 +1,14 @@
 pub fn is_prime(n: i64) -> bool {
-    match n.cmp(&2) {
-        std::cmp::Ordering::Less => false,
-        std::cmp::Ordering::Equal => true,
-        std::cmp::Ordering::Greater => {
-            if n % 2 == 0 {
-                return false;
-            }
-            let mut d = 3;
-            while d * d <= n {
-                if n % d == 0 {
-                    return false;
-                }
-                d += 2;
-            }
-            true
-        }
+    if n < 2 { return false }
+    if n % 2 == 0 || n % 3 == 0 {
+        return n < 4;
     }
+    let mut i = 5;
+    while i * i <= n {
+        if n % i == 0 || n % (i + 2) == 0 {
+            return false;
+        }
+        i = i + 6;
+    }
+    true
 }
